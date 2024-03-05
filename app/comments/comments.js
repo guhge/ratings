@@ -1,6 +1,3 @@
-const { data } = require("autoprefixer")
-const { headers } = require("next/headers")
-
 var access_token, token_expire_time
 
 const user_id = '294610886'
