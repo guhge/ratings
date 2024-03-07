@@ -42,7 +42,7 @@ async function getReviews(url, access_token) {
       };
     url = new URL(url)
     url.searchParams.append('offset', 0);
-    url.searchParams.append('limit', 1);
+    url.searchParams.append('limit', 10);
     await fetch(url, {
       method: 'GET',
       headers: headers
@@ -85,41 +85,57 @@ async function Home() {
   
   let reviews = await getReviews('https://api.avito.ru/ratings/v1/reviews', access_token);
   console.log(reviews);
-  let date = new Date(reviews.reviews[0].createdAt * 1000);
-  let stage = reviews.reviews[0].stage;
-  let staged;
-  switch (stage){
-    case 'done':
-      staged = 'Сделка состоялась';
+  let date, rating, staged, usedInScore;
+  for (let i = 0; i < 10; i++){
+    try {
+      console.log(i);
+      usedInScore = reviews.reviews[i].usedInScore;
+      date = new Date(reviews.reviews[i].createdAt * 1000);
+      let stage = reviews.reviews[i].stage;
+      switch (stage){
+        case 'done':
+          staged = 'Сделка состоялась';
+          break;
+        case 'fell_through':
+          staged = 'Сделка сорвалaсь';
+          break;
+        case 'not_agree':
+          staged = 'Не договорились';
+          break;
+        case 'not_communicate':
+          staged = 'Не общались';
+          break;
+      }
+      if (usedInScore == true){
+        switch (reviews.reviews[i].score){
+          case 5:
+            rating = '★★★★★';
+            break;
+          case 4:
+            rating = '★★★★☆';
+            break;
+          case 3:
+            rating = '★★★☆☆';
+            break;
+          case 2:
+            rating = '★★☆☆☆';
+            break;
+          case 1:
+            rating = '★☆☆☆☆';
+            break;
+          default:
+            rating = '';
+            break;
+        }
+      }else if (usedInScore == false){
+        rating = '';
+      }
+    }catch(error){
       break;
-    case 'fell_through':
-      staged = 'Сделка сорвалaсь';
-      break;
-    case 'not_agree':
-      staged = 'Не договорились';
-      break;
-    case 'not_communicate':
-      staged = 'Не общались';
-      break;
+    }
+    
   }
-  let rating;
-  switch (reviews.reviews[0].score){
-    case 5:
-      rating = '★★★★★';
-      break;
-    case 4:
-      rating = '★★★★☆';
-      break;
-    case 3:
-      rating = '★★★☆☆';
-      break;
-    case 2:
-      rating = '★★☆☆☆';
-      break;
-    case 1:
-      rating = '★☆☆☆☆';
-      break;
-  }
+  
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
