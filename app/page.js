@@ -1,3 +1,5 @@
+import { resolve } from "styled-jsx/css";
+
 let token_expire_time, senderName
 
 const user_id = '294610886'
@@ -7,33 +9,29 @@ const client_id = 'jIC1ZsbUkDO_E2FymKEd'
 async function getAccessToken(url) {
     // const url = 'https://api.avito.ru/token'
     let access_token;
-    const data = "client_id=jIC1ZsbUkDO_E2FymKEd&client_secret=NceYZWK68aCYctPihLoBnq_7iXOQ0Jfq4nVgx5hq&grant_type=client_credentials";
-    const headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    await fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: data,
-    })
-    .then(response => response.json())
-    .then(data => {
-      access_token = data.access_token;
-      token_expire_time = data.expires_in;
-      console.log('Авторизация прошла успешно\n\n' + access_token + '\n')
+    const client_secret = 'NceYZWK68aCYctPihLoBnq_7iXOQ0Jfq4nVgx5hq'
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+    const urlencoded = new URLSearchParams();
+    urlencoded.append("client_id", "jIC1ZsbUkDO_E2FymKEd");
+    urlencoded.append("client_secret", "NceYZWK68aCYctPihLoBnq_7iXOQ0Jfq4nVgx5hq");
+    urlencoded.append("grant_type", "client_credentials");
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: urlencoded,
+      redirect: "follow",
+      cache: "no-cache" 
+    };
+
+    // fetch("https://api.avito.ru/token", requestOptions)
+    return new Promise((resolve, reject) => {
+      if (true) {
+        return resolve(fetch("https://api.avito.ru/token", requestOptions));
+      }
     });
-    return access_token;
-    // access_token = data.access_token;
-    // return access_token;
-    // function authToken(data){
-    //   try{
-    //     access_token = data.access_token
-    //     token_expire_time = data.expires_in
-    //     console.log('Авторизация прошла успешно\n\n' + access_token + '\n')
-    //     return access_token
-    //   }catch (error){
-    //     return console.error('Ошибка при авторизации:', error)
-    //   }
-    // }
-    // return authToken(data);
 }
 
 async function getReviews(url, access_token) {
@@ -44,7 +42,7 @@ async function getReviews(url, access_token) {
       };
     url = new URL(url)
     url.searchParams.append('offset', 0);
-    url.searchParams.append('limit', 3);
+    url.searchParams.append('limit', 1);
     await fetch(url, {
       method: 'GET',
       headers: headers
@@ -77,9 +75,16 @@ async function getReviews(url, access_token) {
 
 // getAccessToken('https://api.avito.ru/token');
 
-export async function Home() {
-  let access_token = await getAccessToken('https://api.avito.ru/token');
+async function Home() {
+  let access_token = await getAccessToken('https://api.avito.ru/token')
+  .then((response) => response.json())
+  .then((result) => {
+    // console.log(result.access_token);
+    return result.access_token
+  });
+  
   let reviews = await getReviews('https://api.avito.ru/ratings/v1/reviews', access_token);
+  console.log(reviews);
   let date = new Date(reviews.reviews[0].createdAt * 1000);
   let stage = reviews.reviews[0].stage;
   let staged;
@@ -97,13 +102,31 @@ export async function Home() {
       staged = 'Не общались';
       break;
   }
+  let rating;
+  switch (reviews.reviews[0].score){
+    case 5:
+      rating = '★★★★★';
+      break;
+    case 4:
+      rating = '★★★★☆';
+      break;
+    case 3:
+      rating = '★★★☆☆';
+      break;
+    case 2:
+      rating = '★★☆☆☆';
+      break;
+    case 1:
+      rating = '★☆☆☆☆';
+      break;
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="review">
       <br/><span id="name">{reviews.reviews[0].sender.name}</span>
       <br/><span className="date">{date.toLocaleDateString("ru-GB")}</span>
-      <br/><span className="status"><span className="text">★★★★☆</span> {staged}: "{reviews.reviews[0].item.title}"</span>
+      <br/><span className="status"><span className="text-yellow-400">{rating}</span> {staged}: "{reviews.reviews[0].item.title}"</span>
       <br/><b>Комментарий</b><br/>{reviews.reviews[0].text}
       </div>
     </main>
