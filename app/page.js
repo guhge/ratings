@@ -85,7 +85,7 @@ async function Home() {
   
   let reviews = await getReviews('https://api.avito.ru/ratings/v1/reviews', access_token);
   console.log(reviews);
-  let date, rating, staged, usedInScore;
+  let date, rating, staged, usedInScore, reviewAnswerText;
   for (let i = 0; i < 10; i++){
     try {
       console.log(i);
@@ -135,15 +135,17 @@ async function Home() {
     }
     
   }
-  
+  // let codeBlock = '<b>Ответ</b><br/>' + reviews.reviews[1].answer.text;
+  // document.getElementById("reply").innerHTML = codeBlock
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="review">
-      <br/><span id="name">{reviews.reviews[0].sender.name}</span>
+      <br/><span id="name">{reviews.reviews[1].sender.name}</span>
       <br/><span className="date">{date.toLocaleDateString("ru-GB")}</span>
-      <br/><span className="status"><span className="text-yellow-400">{rating}</span> {staged}: "{reviews.reviews[0].item.title}"</span>
-      <br/><b>Комментарий</b><br/>{reviews.reviews[0].text}
+      <br/><span className="status"><span className="text-yellow-400">{rating}</span> {staged}: "{reviews.reviews[1].item.title}"</span>
+      <br/><b>Комментарий</b><br/>{reviews.reviews[1].text}
+      <br/><span className="reply"></span>
       </div>
     </main>
   );
