@@ -75,6 +75,24 @@ async function getReviews(url, access_token) {
 
 // getAccessToken('https://api.avito.ru/token');
 
+async function Reply(reply, reviews) {
+  try{
+    if (reviews.reviews[0].answer.text === undefined){
+      return
+    }else{
+      return (
+        <div>
+        <span className="reply"><b>Ответ</b><br/>{reply}</span>
+        </div>
+      )
+    }
+  }catch(e){
+    return
+  }
+  
+}
+
+
 async function Home() {
   let access_token = await getAccessToken('https://api.avito.ru/token')
   .then((response) => response.json())
@@ -90,7 +108,9 @@ async function Home() {
     try {
       console.log(i);
       usedInScore = reviews.reviews[i].usedInScore;
+      reviewAnswerText = reviews.reviews[1].answer.text;
       date = new Date(reviews.reviews[i].createdAt * 1000);
+      
       let stage = reviews.reviews[i].stage;
       switch (stage){
         case 'done':
@@ -135,9 +155,6 @@ async function Home() {
     }
     
   }
-  // let codeBlock = '<b>Ответ</b><br/>' + reviews.reviews[1].answer.text;
-  // document.getElementById("reply").innerHTML = codeBlock
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="review">
@@ -145,7 +162,7 @@ async function Home() {
       <br/><span className="date">{date.toLocaleDateString("ru-GB")}</span>
       <br/><span className="status"><span className="text-yellow-400">{rating}</span> {staged}: "{reviews.reviews[1].item.title}"</span>
       <br/><b>Комментарий</b><br/>{reviews.reviews[1].text}
-      <br/><span className="reply"></span>
+      {await Reply(reviewAnswerText, reviews)}
       </div>
     </main>
   );
